@@ -10,5 +10,8 @@ before_install:
   - sudo apt-get install -qq gdb
 
 script:
+  - echo ${COMPILER}
+  - echo ${CXX}
+  - $CXX --version
   - $CXX -I. -std=c++11 test_weak_ref.cpp
   - gdb -batch -ex "run" -ex "thread apply all bt" -ex "quit" --args ./a.out
