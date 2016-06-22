@@ -119,7 +119,7 @@ public:
   // Observers
   // Get the managed pointer
   T * get() const {
-    if (ptr_) { return ptr_.payload_; }
+    if (ptr_) { return ptr_->payload_; }
     return nullptr;
   }
 
