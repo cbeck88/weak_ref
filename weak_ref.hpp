@@ -58,7 +58,7 @@ class unique_ref {
 
   void init(T & t) { ptr_ = new ctrl_t(&t); }
 
-  void move(unique_ref & o) {
+  void move(unique_ref & o) noexcept {
     ptr_ = o.ptr_;
     o.ptr_ = nullptr;
   }
@@ -73,13 +73,14 @@ public:
   explicit unique_ref(T & t) { this->init(t); }
 
   // Special member functions
-  unique_ref() : ptr_(nullptr) {}
+  constexpr unique_ref() noexcept : ptr_(nullptr) {}
 
-  ~unique_ref() { this->reset(); }
+  ~unique_ref() noexcept { this->reset(); }
 
-  unique_ref(unique_ref && other) { this->move(other); }
+  unique_ref(unique_ref && other) noexcept { this->move(other); }
 
-  unique_ref & operator = (unique_ref && other) {
+  unique_ref & operator = (unique_ref && other) noexcept {
+    this->reset();
     this->move(other);
     return *this;
   }
@@ -101,7 +102,7 @@ public:
   }
 
   // Reset (release managed object)
-  void reset() {
+  void reset() noexcept {
     if (ptr_) {
       ptr_->payload_ = nullptr;
       if (!ptr_->ref_count_) {
@@ -112,7 +113,7 @@ public:
   }
 
   // Swap
-  void swap(unique_ref & other) {
+  void swap(unique_ref & other) noexcept {
     ctrl_t * temp = ptr_;
     ptr_ = other.ptr_;
     other.ptr_ = temp;
@@ -120,31 +121,31 @@ public:
 
   // Observers
   // Get the managed pointer
-  T * get() const {
+  T * get() const noexcept {
     if (ptr_) { return ptr_->payload_; }
     return nullptr;
   }
 
   // Operator *: Blindly dereference the getted pointer, without a null check.
-  T & operator *() const {
+  T & operator *() const noexcept {
     return *this->get();
   }
 
   // Operator bool: check if there is a managed object
-  explicit operator bool() const { return ptr_; }
+  explicit constexpr operator bool() const noexcept { return ptr_; }
 
   // use_count: mimic std::shared_ptr interface
-  long use_count() const {
+  constexpr long use_count() const noexcept {
     return ptr_ ? 1 : 0;
   }
 
   // unique: mimic std::shared_ptr interface
-  bool unique() const {
+  constexpr bool unique() const noexcept {
     return this->use_count() == 1;
   }
 
   // weak_ref_count: do something more useful :)
-  long weak_ref_count() const {
+  long weak_ref_count() const noexcept {
     if (ptr_) { return ptr_->ref_count_; }
     return 0;
   }
@@ -160,19 +161,19 @@ class weak_ref {
   // this should be a cheap operation in an optimized build.
   mutable const ctrl_t * ptr_;
 
-  void init(const ctrl_t * c) {
+  void init(const ctrl_t * c) noexcept {
     if (c) {
       ++(c->ref_count_);
     }
     ptr_ = c;
   }
 
-  void move(weak_ref & o) {
+  void move(weak_ref & o) noexcept {
     ptr_ = o.ptr_;
     o.ptr_ = nullptr;
   }
 
-  void release() const {
+  void release() const noexcept {
     if (ptr_) {
       if (!--(ptr_->ref_count_)) {
         delete ptr_;
@@ -183,50 +184,50 @@ class weak_ref {
 
 public:
   // Special member functions
-  weak_ref() : ptr_(nullptr) {}
-  weak_ref(const weak_ref & o) {
+  constexpr weak_ref() noexcept : ptr_(nullptr) {}
+  weak_ref(const weak_ref & o) noexcept {
     this->init(o.ptr_);
   }
-  weak_ref(weak_ref && o) { this->move(o); }
-  ~weak_ref() { this->release(); }
+  weak_ref(weak_ref && o) noexcept { this->move(o); }
+  ~weak_ref() noexcept { this->release(); }
 
-  weak_ref & operator = (const weak_ref & o) {
+  weak_ref & operator = (const weak_ref & o) noexcept {
     this->release();
     this->init(o.ptr_);
     return *this;
   }
 
-  weak_ref & operator = (weak_ref && o) {
+  weak_ref & operator = (weak_ref && o) noexcept {
     this->release();
     this->move(o);
     return *this;
   }
 
   // Construct from unique_ref
-  explicit weak_ref(const unique_ref<T> & u) {
+  explicit weak_ref(const unique_ref<T> & u) noexcept {
     this->init(u.ptr_);
   }
 
-  weak_ref & operator = (const unique_ref<T> & u) {
+  weak_ref & operator = (const unique_ref<T> & u) noexcept {
     this->release();
     this->init(u.ptr_);
     return *this;
   }
 
   // Swap
-  void swap(weak_ref & o) {
+  void swap(weak_ref & o) noexcept {
     const ctrl_t * temp = ptr_;
     ptr_ = o.ptr_;
     o.ptr_ = temp;
   }
 
   // Reset is not const qualified, from user perspective this makes the most sense.
-  void reset() {
+  void reset() noexcept {
     this->release();
   }
 
   // Lock: Obtain the payload if possible, otherwise return nullptr
-  T * lock() const {
+  T * lock() const noexcept {
     if (ptr_) {
       T * result = ptr_->payload_;
       if (!result) { this->release(); }
@@ -236,17 +237,17 @@ public:
   }
 
   // Expired: cast this->lock() to bool
-  bool expired() const {
+  bool expired() const noexcept {
     return static_cast<bool>(this->lock());
   }
 
   // use_count: mimic std::shared_ptr interface
-  long use_count() const {
+  long use_count() const noexcept {
     return this->expired() ? 1 : 0;
   }
 
   // weak_ref_count: do something more useful :)
-  long weak_ref_count() const {
+  long weak_ref_count() const noexcept {
     if (ptr_) {
       if (ptr_->payload_) {
         return ptr_->ref_count_;
