@@ -1,5 +1,8 @@
 # weak_ref
 
+[![Build Status](https://travis-ci.org/cbeck88/weak_ref.svg?branch=master)](http://travis-ci.org/cbeck88/weak_ref)
+[![Boost licensed](https://img.shields.io/badge/license-Boost-blue.svg)](./LICENSE)
+
 A single-header header-only library for providing a **weak_reference** type for C++11.
 
 In some applications, this can be more efficient than using `std::shared_ptr` and
@@ -35,4 +38,4 @@ assert(r1.lock() == nullptr);
 
 ## Licensing and Distribution
 
-`weak_ptr` is a single header file available under the boost software license.
+`weak_ref` is a single header file available under the boost software license.

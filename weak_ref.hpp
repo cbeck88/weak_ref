@@ -64,14 +64,16 @@ class unique_ref {
   }
 
   // Invariant: If ptr_ is not null, it points to a ctrl_t that no other
-  // unique_rf points to, and ptr_->payload_ is also not null.
+  // unique_ref points to, and ptr_->payload_ is also not null.
 
   friend class weak_ref<T>;
 
 public:
+  // Initialization
+  explicit unique_ref(T & t) { this->init(t); }
+
   // Special member functions
   unique_ref() : ptr_(nullptr) {}
-  unique_ref(T & t) { this->init(t); }
 
   ~unique_ref() { this->reset(); }
 
@@ -182,9 +184,6 @@ class weak_ref {
 public:
   // Special member functions
   weak_ref() : ptr_(nullptr) {}
-  weak_ref(const unique_ref<T> & u) {
-    this->init(u.ptr_);
-  }
   weak_ref(const weak_ref & o) {
     this->init(o.ptr_);
   }
@@ -200,6 +199,17 @@ public:
   weak_ref & operator = (weak_ref && o) {
     this->release();
     this->move(o);
+    return *this;
+  }
+
+  // Construct from unique_ref
+  explicit weak_ref(const unique_ref<T> & u) {
+    this->init(u.ptr_);
+  }
+
+  weak_ref & operator = (const unique_ref<T> & u) {
+    this->release();
+    this->init(u.ptr_);
     return *this;
   }
 
