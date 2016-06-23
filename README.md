@@ -33,7 +33,7 @@ weak_ref<int> r1;
 assert(r1.lock() == nullptr);
 
 {
-  unique_ref<int> foo{x};
+  unique_ref<int> foo{&x};
 
   r1 = foo;
 

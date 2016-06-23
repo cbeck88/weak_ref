@@ -18,7 +18,7 @@ int main() {
   assert(!r3.lock());
 
   {
-    unique_ref<int> foo{x};
+    unique_ref<int> foo{&x};
 
     r1 = foo;
 
@@ -43,7 +43,7 @@ int main() {
     assert(r2.lock());
     assert(*r2.lock() == 6);
 
-    unique_ref<int> bar{y};
+    unique_ref<int> bar{&y};
 
     r3 = bar;
 
@@ -100,8 +100,8 @@ int main() {
   assert(!r4.lock());
 
   {
-    unique_ref<int> foo{x};
-    unique_ref<int> bar{y};
+    unique_ref<int> foo{&x};
+    unique_ref<int> bar{&y};
 
     r1 = foo;
     r2 = foo;

@@ -56,7 +56,13 @@ class unique_ref {
 
   ctrl_t * ptr_;
 
-  void init(T & t) { ptr_ = new ctrl_t(&t); }
+  void init(T * t) {
+    if (t) {
+      ptr_ = new ctrl_t(t);
+    } else {
+      ptr_ = nullptr;
+    }
+  }
 
   void move(unique_ref & o) noexcept {
     ptr_ = o.ptr_;
@@ -70,7 +76,7 @@ class unique_ref {
 
 public:
   // Initialization
-  explicit unique_ref(T & t) { this->init(t); }
+  explicit unique_ref(T * t) { this->init(t); }
 
   // Special member functions
   constexpr unique_ref() noexcept : ptr_(nullptr) {}
@@ -88,7 +94,7 @@ public:
   // Copy ctor: Make a new ctrl structure pointing to the same payload
   unique_ref(const unique_ref & other) {
     if (other.ptr_) {
-      this->init(*other.ptr_->payload_);
+      this->init(other.ptr_->payload_);
     } else {
       ptr_ = nullptr;
     }
