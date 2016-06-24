@@ -18,7 +18,7 @@ int main() {
   assert(!r3.lock());
 
   {
-    unique_ref<int> foo{&x};
+    master_ref<int> foo{&x};
 
     r1 = foo;
 
@@ -43,7 +43,7 @@ int main() {
     assert(r2.lock());
     assert(*r2.lock() == 6);
 
-    unique_ref<int> bar{&y};
+    master_ref<int> bar{&y};
 
     r3 = bar;
 
@@ -100,8 +100,8 @@ int main() {
   assert(!r4.lock());
 
   {
-    unique_ref<int> foo{&x};
-    unique_ref<int> bar{&y};
+    master_ref<int> foo{&x};
+    master_ref<int> bar{&y};
 
     r1 = foo;
     r2 = foo;
@@ -173,4 +173,23 @@ int main() {
   assert(!r3.lock());
   assert(!r4.lock());
 
+  {
+    weakly_referenced<int> z{-85};
+
+    auto r5 = z.get_weak_ref();
+
+    assert(r5.lock());
+    assert(*r5.lock() == -85);
+
+    r1 = z.get_weak_ref();
+
+    assert(r1.weak_ref_count() == 2);
+    assert(r5.weak_ref_count() == 2);
+    assert(r1.lock() == r5.lock());
+  }
+
+  assert(!r1.lock());
+  assert(!r2.lock());
+  assert(!r3.lock());
+  assert(!r4.lock());
 }
