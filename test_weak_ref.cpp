@@ -192,4 +192,19 @@ int main() {
   assert(!r2.lock());
   assert(!r3.lock());
   assert(!r4.lock());
+
+  {
+    weakly_referenced<int> q{19};
+    auto r = q.get_weak_ref();
+    auto s = q.get_weak_ref();
+    auto t = q.get_weak_ref();
+
+    assert(t.lock());
+
+    r.reset();
+    s.reset();
+    t.reset();
+
+    assert(!t.lock());
+  }
 }
