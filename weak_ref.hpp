@@ -33,7 +33,6 @@
      control structure, whose destructor is trivial.
  */
 
-#include <new>
 #include <utility>
 
 namespace nonstd {
@@ -61,11 +60,10 @@ class master_ref {
 
   ctrl_t * ptr_;
 
-  // precondition: `t` is not null
-  void init(T * t) noexcept {
-    try {
+  void init(T * t) {
+    if (t) {
       ptr_ = new ctrl_t(t);
-    } catch (std::bad_alloc &) {
+    } else {
       ptr_ = nullptr;
     }
   }
@@ -84,13 +82,7 @@ public:
   typedef T element_type;
 
   // Initialization
-  explicit master_ref(T * t) noexcept {
-    if (t) {
-      this->init(t);
-    } else {
-      ptr_ = nullptr;
-    }
-  }
+  explicit master_ref(T * t) { this->init(t); }
 
   // Special member functions
   constexpr master_ref() noexcept : ptr_(nullptr) {}
@@ -305,9 +297,6 @@ public:
   weak_ref<T> get_weak_ref() const {
     return weak_ref<T>{this->ref};
   }
-
-  void reset_ref() noexcept { this->ref.reset(); }
-  void reinit_ref() noexcept { this->ref = master_ref<T>{&object}; }
 };
 
 } // end namespace nonstd
